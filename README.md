@@ -1,2 +1,2 @@
-# KesuikeHonda-Janken-Discord-Bot
+# KeisuikeHonda-Janken-Discord-Bot
 ![Sample](https://i.imgur.com/toumrik.png "サンプル")
