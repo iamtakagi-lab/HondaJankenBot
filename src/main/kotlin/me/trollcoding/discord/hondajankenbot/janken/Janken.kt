@@ -3,6 +3,7 @@ package me.trollcoding.discord.hondajankenbot.janken
 import com.sun.org.apache.xpath.internal.operations.Bool
 import me.trollcoding.discord.hondajankenbot.Bot
 import net.dv8tion.jda.core.entities.Member
+import java.io.File
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
@@ -16,7 +17,8 @@ class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
     @Synchronized
     fun excecute(textChId: Long, queue: Boolean) : Janken? {
         val url: String
-        if (isWin()) {
+        val iswin = isWin()
+        if (iswin) {
             url = JankenResources.winMovieURLs[Bot.random.nextInt(JankenResources.winMovieURLs.size)]
         } else {
             url = JankenResources.loseMovieURLs[Bot.random.nextInt(JankenResources.loseMovieURLs.size)]
@@ -29,8 +31,29 @@ class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
             return null
         }
 
+        val member = guild.getMemberById(memberId)
+
         if (!queue) {
             Bot.instance.loadAndPlay(guild, guild.getVoiceChannelById(voiceChannelId), url)
+            val textCh = guild.getTextChannelById(textChId)
+            if (textCh != null) {
+                Timer(false).schedule(object : TimerTask() {
+                    override fun run() {
+                        if(iswin){
+                            textCh.sendMessage("やるやん。\n" +
+                                    "明日は俺にリベンジさせて。\n" +
+                                    "では、どうぞ。${member.asMention}").queue()
+                            textCh.sendFile(File("C:/Users/IT/Desktop/DiscordBot/HondaJankenBot/you_win.jpg")).queue()
+                        }else{
+                            textCh.sendMessage("俺の勝ち！\n" +
+                                    "何で負けたか、明日まで考えといてください。\n" +
+                                    "そしたら何かが見えてくるはずです。\n" +
+                                    "ほな、いただきます。${member.asMention}").queue()
+                            textCh.sendFile(File("C:/Users/IT/Desktop/DiscordBot/HondaJankenBot/you_lose.jpg")).queue()
+                        }
+                    }
+                }, 1000 * 15)
+            }
         }
 
         val janken: Janken = this
@@ -48,7 +71,8 @@ class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
 
                         if (member != null) {
                             val url2: String
-                            if (isWin()) {
+                            val iswin2 = isWin()
+                            if (iswin2) {
                                 url2 =
                                     JankenResources.winMovieURLs[Bot.random.nextInt(JankenResources.winMovieURLs.size)]
                             } else {
@@ -60,6 +84,23 @@ class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
                             if (textCh != null) {
                                 textCh.sendMessage(":o: お前の番だ！じゃんけんするぞ！ " + member.asMention).queue()
                                 Janken.currentJankens[guildId] = janken.excecute(textChId, true)
+
+                                Timer(false).schedule(object : TimerTask() {
+                                    override fun run() {
+                                        if(iswin2){
+                                            textCh.sendMessage("やるやん。\n" +
+                                                    "明日は俺にリベンジさせて。\n" +
+                                                    "では、どうぞ。${member.asMention}").queue()
+                                            textCh.sendFile(File("C:/Users/IT/Desktop/DiscordBot/HondaJankenBot/you_win.jpg")).queue()
+                                        }else{
+                                            textCh.sendMessage("俺の勝ち！\n" +
+                                                    "何で負けたか、明日まで考えといてください。\n" +
+                                                    "そしたら何かが見えてくるはずです。\n" +
+                                                    "ほな、いただきます。${member.asMention}").queue()
+                                            textCh.sendFile(File("C:/Users/IT/Desktop/DiscordBot/HondaJankenBot/you_lose.jpg")).queue()
+                                        }
+                                    }
+                                }, 1000 * 15)
                             }
                         }
                         queues.remove(queue.key)
