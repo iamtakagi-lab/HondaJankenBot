@@ -142,7 +142,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>me.trollcoding.discord.hondajankenbot</mainClass>
+                            <mainClass>me.trollcoding.discord.hondajankenbot.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
