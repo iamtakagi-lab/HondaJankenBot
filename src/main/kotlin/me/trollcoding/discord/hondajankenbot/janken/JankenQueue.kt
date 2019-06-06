@@ -1,12 +1,8 @@
 package me.trollcoding.discord.hondajankenbot.janken
 
+import me.trollcoding.discord.hondajankenbot.Bot
+import net.dv8tion.jda.client.entities.Application
+import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
 
-class JankenQueue(val member: Member){
-
-    fun excecute(){
-        if(member.voiceState.inVoiceChannel()) {
-            Janken.currentJankens[member.guild] = Janken(member.voiceState.channel.idLong, member.guild).excecute()
-        }
-    }
-}
+class JankenQueue(val memberId: Long, val textChId: Long, val guildId: Long)

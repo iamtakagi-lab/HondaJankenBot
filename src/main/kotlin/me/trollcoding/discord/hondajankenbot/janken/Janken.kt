@@ -1,12 +1,12 @@
 package me.trollcoding.discord.hondajankenbot.janken
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import me.trollcoding.discord.hondajankenbot.Bot
-import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Member
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
-class Janken(val voiceChannelId: Long, val guild: Guild) {
+class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
 
     private fun isWin(): Boolean {
         val n = Bot.random.nextInt(100)
@@ -14,26 +14,54 @@ class Janken(val voiceChannelId: Long, val guild: Guild) {
     }
 
     @Synchronized
-    fun excecute() : Janken {
+    fun excecute(textChId: Long, queue: Boolean) : Janken? {
         val url: String
-
         if (isWin()) {
             url = JankenResources.winMovieURLs[Bot.random.nextInt(JankenResources.winMovieURLs.size)]
         } else {
             url = JankenResources.loseMovieURLs[Bot.random.nextInt(JankenResources.loseMovieURLs.size)]
         }
 
-        Bot.instance.loadAndPlay(guild, guild.getVoiceChannelById(voiceChannelId), url)
+        val guild = Bot.instance.jda.getGuildById(guildId)
+
+        if (guild == null) {
+            queues.remove(guildId)
+            return null
+        }
+
+        if (!queue) {
+            Bot.instance.loadAndPlay(guild, guild.getVoiceChannelById(voiceChannelId), url)
+        }
+
+        val janken: Janken = this
 
         Timer(false).schedule(object : TimerTask() {
             override fun run() {
                 guild.audioManager.closeAudioConnection()
-                currentJankens[guild] = null
+                currentJankens.remove(guild.idLong)
                 if(queues.isNotEmpty()) {
                     val queue = queues.entries.stream().findFirst()
-                    if(queue.isPresent) {
+                    if (queue.isPresent) {
                         val queue = queue.get()
-                        queue.value!!.excecute()
+
+                        val member = guild.getMemberById(queue.key)
+
+                        if (member != null) {
+                            val url2: String
+                            if (isWin()) {
+                                url2 =
+                                    JankenResources.winMovieURLs[Bot.random.nextInt(JankenResources.winMovieURLs.size)]
+                            } else {
+                                url2 =
+                                    JankenResources.loseMovieURLs[Bot.random.nextInt(JankenResources.loseMovieURLs.size)]
+                            }
+                            Bot.instance.loadAndPlay(guild, guild.getVoiceChannelById(voiceChannelId), url2)
+                            val textCh = guild.getTextChannelById(textChId)
+                            if (textCh != null) {
+                                textCh.sendMessage(":o: お前の番だ！じゃんけんするぞ！ " + member.asMention).queue()
+                                Janken.currentJankens[guildId] = janken.excecute(textChId, true)
+                            }
+                        }
                         queues.remove(queue.key)
                     }
                 }
@@ -43,29 +71,35 @@ class Janken(val voiceChannelId: Long, val guild: Guild) {
     }
 
     companion object {
-        val queues: MutableMap<Member?, JankenQueue?> = LinkedHashMap()
-        var currentJankens: MutableMap<Guild?, Janken?> = LinkedHashMap()
+        //UserID, JankenQueue
+        val queues: MutableMap<Long, JankenQueue?> = LinkedHashMap()
+        //GuildID, Janken
+        var currentJankens: MutableMap<Long, Janken?> = LinkedHashMap()
 
-        fun addToQueue(member: Member): QueueResponse {
-            if (queues.containsKey(member)) {
-                return QueueResponse.ALREADY_IN_QUEUE
+        fun addToQueue(member: Member, textChId: Long): QueueResult {
+            /*if(currentJankens[guildId] != null && currentJankens[guildId]!!.memberId == member.user.idLong){
+                return QueueResult.YOU_ARE_DOING_JANKEN
+            }*/
+            if (queues.containsKey(member.user.idLong)) {
+                return QueueResult.ALREADY_IN_QUEUE
             }
-            if (currentJankens[member.guild] != null) {
-                queues[member] = JankenQueue(member)
-                return QueueResponse.SUCCESSFULLY_ADDED_TO_QUEUE
+            if (currentJankens[member.guild.idLong] != null) {
+                queues[member.user.idLong] = JankenQueue(member.user.idLong, textChId, member.guild.idLong)
+                return QueueResult.SUCCESSFULLY_ADDED_TO_QUEUE
             }
             if (!member.voiceState.inVoiceChannel()) {
-                return QueueResponse.YOU_ARE_NOT_IN_VOICECHANNEL
+                return QueueResult.YOU_ARE_NOT_IN_VOICECHANNEL
             }
-            currentJankens[member.guild] = Janken(member.voiceState.channel.idLong, member.guild).excecute()
-            return QueueResponse.SUCCESSFULLY_STARTING_JANKEN
+            currentJankens[member.guild.idLong] = Janken(member.user.idLong, member.voiceState.channel.idLong, member.guild.idLong).excecute(textChId, false)
+            return QueueResult.SUCCESSFULLY_STARTING_JANKEN
         }
     }
 
-    enum class QueueResponse(val context: String) {
-        ALREADY_IN_QUEUE(":x: 既にじゃんけんを予約済みだ。"),
-        SUCCESSFULLY_ADDED_TO_QUEUE(":o: おっと、混みあっているようだ。 Queueに予約済したぞ: ${queues.size}"),
-        SUCCESSFULLY_STARTING_JANKEN("かかってこい。じゃんけんするぞ！"),
-        YOU_ARE_NOT_IN_VOICECHANNEL("ボイスチャンネルに入ってからオレを呼んでくれ！")
+    enum class QueueResult(val context: String) {
+        YOU_ARE_DOING_JANKEN(":x: お前はじゃんけん中だ。{mention}"),
+        ALREADY_IN_QUEUE(":x: 既にじゃんけんを予約済みだ。{mention}"),
+        SUCCESSFULLY_ADDED_TO_QUEUE(":o: おっと、混みあっているようだ\nQueueに予約したぞ。 順番: ${queues.size+1} {mention}"),
+        SUCCESSFULLY_STARTING_JANKEN(":o: かかってこい。じゃんけんするぞ！ {mention}"),
+        YOU_ARE_NOT_IN_VOICECHANNEL(":x: ボイスチャンネルに入ってからオレを呼んでくれ！ {mention}")
     }
 }

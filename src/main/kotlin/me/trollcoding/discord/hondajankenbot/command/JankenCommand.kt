@@ -15,8 +15,8 @@ class JankenCommand : Command(){
 
     override fun execute(event: CommandEvent?) {
         event?.apply {
-            val res: Janken.QueueResponse = Janken.addToQueue(member)
-            channel.sendMessage(res.context).queue()
+            val result: Janken.QueueResult = Janken.addToQueue(member, event.textChannel.idLong)
+            channel.sendMessage(result.context.replace("{mention}", member.asMention)).queue()
         }
     }
 }
