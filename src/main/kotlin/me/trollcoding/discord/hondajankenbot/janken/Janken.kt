@@ -11,7 +11,7 @@ class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
 
     private fun isWin(): Boolean {
         val n = Bot.random.nextInt(100)
-        return n > 99
+        return n > 50
     }
 
     @Synchronized
