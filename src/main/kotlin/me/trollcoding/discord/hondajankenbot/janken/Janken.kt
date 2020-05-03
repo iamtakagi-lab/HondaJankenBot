@@ -11,7 +11,7 @@ class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
 
     private fun isWin(): Boolean {
         val n = Bot.random.nextInt(100)
-        return n > 50
+        return n > 80
     }
 
     @Synchronized
@@ -43,13 +43,13 @@ class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
                             textCh.sendMessage("やるやん。\n" +
                                     "明日は俺にリベンジさせて。\n" +
                                     "では、どうぞ。${member.asMention}").queue()
-                            textCh.sendFile(File("C:/Users/IT/Desktop/DiscordBot/HondaJankenBot/you_win.jpg")).queue()
+                            textCh.sendFile(File("C:/Users/Administrator/Desktop/HondaJankenBot/you_win.jpg")).queue()
                         }else{
                             textCh.sendMessage("俺の勝ち！\n" +
                                     "何で負けたか、明日まで考えといてください。\n" +
                                     "そしたら何かが見えてくるはずです。\n" +
                                     "ほな、いただきます。${member.asMention}").queue()
-                            textCh.sendFile(File("C:/Users/IT/Desktop/DiscordBot/HondaJankenBot/you_lose.jpg")).queue()
+                            textCh.sendFile(File("C:/Users/Administrator/Desktop/HondaJankenBot/you_lose.jpg")).queue()
                         }
                     }
                 }, 1000 * 15)
@@ -91,13 +91,13 @@ class Janken(val memberId: Long, val voiceChannelId: Long, val guildId: Long) {
                                             textCh.sendMessage("やるやん。\n" +
                                                     "明日は俺にリベンジさせて。\n" +
                                                     "では、どうぞ。${member.asMention}").queue()
-                                            textCh.sendFile(File("C:/Users/IT/Desktop/DiscordBot/HondaJankenBot/you_win.jpg")).queue()
+                                            textCh.sendFile(File("C:/Users/Administrator/Desktop/HondaJankenBot/you_win.jpg")).queue()
                                         }else{
                                             textCh.sendMessage("俺の勝ち！\n" +
                                                     "何で負けたか、明日まで考えといてください。\n" +
                                                     "そしたら何かが見えてくるはずです。\n" +
                                                     "ほな、いただきます。${member.asMention}").queue()
-                                            textCh.sendFile(File("C:/Users/IT/Desktop/DiscordBot/HondaJankenBot/you_lose.jpg")).queue()
+                                            textCh.sendFile(File("C:/Users/Administrator/Desktop/HondaJankenBot/you_lose.jpg")).queue()
                                         }
                                     }
                                 }, 1000 * 15)

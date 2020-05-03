@@ -21,7 +21,6 @@ import com.jagrosh.jdautilities.command.CommandClientBuilder
 import me.trollcoding.discord.hondajankenbot.command.JankenCommand
 import java.util.*
 
-
 class Bot (private val token: String) {
 
     companion object {
@@ -45,7 +44,7 @@ class Bot (private val token: String) {
         builder.setOwnerId("127640287249039360")
         builder.setPrefix("!")
         builder.addCommand(JankenCommand())
-        builder.setHelpWord("amorehelp")
+        builder.setHelpWord("honda")
         val client = builder.build()
         jda.addEventListener(client)
     }
